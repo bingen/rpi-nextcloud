@@ -29,9 +29,10 @@ fi
 # check needed variables
 if [[ -z ${DB_HOST} || -z ${NEXTCLOUD_DB_NAME} || -z ${NEXTCLOUD_DB_USER} \
             || -z ${NEXTCLOUD_DB_PWD} || -z ${NEXTCLOUD_ADMIN_PWD} \
-            || -z ${NEXTCLOUD_DATA_PATH} ]]; then
+            || -z ${NEXTCLOUD_DATA_PATH} || -z ${NEXTCLOUD_BACKUP_PATH} ]]; then
     echo "Missing variable! You must provide: DB_HOST, NEXTCLOUD_DB_NAME, \
-NEXTCLOUD_DB_USER, NEXTCLOUD_DB_PWD, NEXTCLOUD_ADMIN_PWD, NEXTCLOUD_DATA_PATH";
+NEXTCLOUD_DB_USER, NEXTCLOUD_DB_PWD, NEXTCLOUD_ADMIN_PWD, NEXTCLOUD_DATA_PATH, \
+NEXTCLOUD_BACKUP_PATH";
     env;
     exit 1;
 fi
@@ -68,18 +69,20 @@ done
 # check if DB exists (not needed actually, but good to log it)
 DB_EXISTS=$(mysql -u root -p${MYSQL_ROOT_PWD} -h ${DB_HOST} -e "SHOW DATABASES" 2> /dev/null | grep ${NEXTCLOUD_DB_NAME})
 echo DB exists: ${DB_EXISTS}
-#if [ ! -z ${DB_EXISTS} ]; then
-#fi
 
-echo Creating Database and User
-mysql -u root -p${MYSQL_ROOT_PWD} -h ${DB_HOST} -e "DROP DATABASE IF EXISTS ${NEXTCLOUD_DB_NAME};"
-check_result $? "Dropping DB"
+if [ ! -z "${DB_EXISTS}" ]; then
+    echo Creating Database
+    mysql -u root -p${MYSQL_ROOT_PWD} -h ${DB_HOST} -e "DROP DATABASE IF EXISTS ${NEXTCLOUD_DB_NAME};"
+    check_result $? "Dropping DB"
+    mysql -u root -p${MYSQL_ROOT_PWD} -h ${DB_HOST} -e "CREATE DATABASE ${NEXTCLOUD_DB_NAME};"
+    check_result $? "Creating DB"
+fi
+
+echo Creating User
 # 'IF EXISTS' for DROP USER is available from MariaDB 10.1.3 only
 mysql -u root -p${MYSQL_ROOT_PWD} -h ${DB_HOST} -e "DROP USER ${NEXTCLOUD_DB_USER};" || echo "It seems it didn't exist"
 mysql -u root -p${MYSQL_ROOT_PWD} -h ${DB_HOST} -e "CREATE USER ${NEXTCLOUD_DB_USER} IDENTIFIED BY '${NEXTCLOUD_DB_PWD}';"
 check_result $? "Creating User"
-mysql -u root -p${MYSQL_ROOT_PWD} -h ${DB_HOST} -e "CREATE DATABASE ${NEXTCLOUD_DB_NAME};"
-check_result $? "Creating DB"
 mysql -u root -p${MYSQL_ROOT_PWD} -h ${DB_HOST} -e "GRANT ALL ON ${NEXTCLOUD_DB_NAME}.* TO ${NEXTCLOUD_DB_USER};"
 check_result $? "Granting permissions"
 mysql -u root -p${MYSQL_ROOT_PWD} -h ${DB_HOST} -e "FLUSH PRIVILEGES;"
@@ -88,7 +91,7 @@ check_result $? "Flushing privileges"
 unset MYSQL_ROOT_PWD
 
 # DB Backup
-if [ ! -z ${NEXTCLOUD_DB_BACKUP} -a -f ${NEXTCLOUD_DB_BACKUP} ]; then
+if [ ! -z "${DB_EXISTS}" -a ! -z "${NEXTCLOUD_DB_BACKUP}" -a -f "${NEXTCLOUD_DB_BACKUP}" ]; then
     echo Restoring DB Backup...
     mysql -u ${NEXTCLOUD_DB_USER} -p${NEXTCLOUD_DB_PWD} -D ${NEXTCLOUD_DB_NAME} -h ${DB_HOST} < ${NEXTCLOUD_DB_BACKUP};
     check_result $? "Restoring DB"

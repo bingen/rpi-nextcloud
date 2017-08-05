@@ -2,8 +2,9 @@ FROM bingen/rpi-nginx-php5
 
 ARG NEXTCLOUD_VERSION
 ARG NEXTCLOUD_DATA_PATH
+ARG NEXTCLOUD_BACKUP_PATH
 
-RUN apt-get update && apt-get install -y wget bzip2 vim mariadb-client php5-ldap
+RUN apt-get update && apt-get install -y wget bzip2 vim rsync mariadb-client php5-ldap
 
 # Change upload-limits and -sizes
 RUN sudo sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 2048M/g" /etc/php5/fpm/php.ini && \
@@ -20,7 +21,8 @@ COPY default /etc/nginx/sites-available/default
 
 # Create the data-directory where NEXTCLOUD can store its stuff
 RUN mkdir -p "${NEXTCLOUD_DATA_PATH}" && \
-    chown -R www-data:www-data "${NEXTCLOUD_DATA_PATH}"
+    chown -R www-data:www-data "${NEXTCLOUD_DATA_PATH}" && \
+    mkdir -p "${NEXTCLOUD_BACKUP_PATH}"
 
 # finally, download NEXTCLOUD and extract it
 RUN mkdir -p /var/www
@@ -38,8 +40,11 @@ RUN wget https://download.nextcloud.com/server/releases/${NEXTCLOUD_VERSION}.tar
 WORKDIR /
 COPY docker-entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY backup.sh /etc/cron.daily/backup
+RUN chmod +x /etc/cron.daily/backup
 
 #VOLUME ${NEXTCLOUD_DATA_PATH}
+#VOLUME ${NEXTCLOUD_BACKUP_PATH}
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 CMD service php5-fpm start && nginx
