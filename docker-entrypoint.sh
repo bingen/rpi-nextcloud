@@ -70,10 +70,10 @@ done
 DB_EXISTS=$(mysql -u root -p${MYSQL_ROOT_PWD} -h ${DB_HOST} -e "SHOW DATABASES" 2> /dev/null | grep ${NEXTCLOUD_DB_NAME})
 echo DB exists: ${DB_EXISTS}
 
-if [ ! -z "${DB_EXISTS}" ]; then
+if [ -z "${DB_EXISTS}" ]; then
     echo Creating Database
-    mysql -u root -p${MYSQL_ROOT_PWD} -h ${DB_HOST} -e "DROP DATABASE IF EXISTS ${NEXTCLOUD_DB_NAME};"
-    check_result $? "Dropping DB"
+    #mysql -u root -p${MYSQL_ROOT_PWD} -h ${DB_HOST} -e "DROP DATABASE IF EXISTS ${NEXTCLOUD_DB_NAME};"
+    #check_result $? "Dropping DB"
     mysql -u root -p${MYSQL_ROOT_PWD} -h ${DB_HOST} -e "CREATE DATABASE ${NEXTCLOUD_DB_NAME};"
     check_result $? "Creating DB"
 fi
@@ -95,12 +95,12 @@ if [ ! -z "${DB_EXISTS}" -a ! -z "${NEXTCLOUD_DB_BACKUP}" -a -f "${NEXTCLOUD_DB_
     echo Restoring DB Backup...
     mysql -u ${NEXTCLOUD_DB_USER} -p${NEXTCLOUD_DB_PWD} -D ${NEXTCLOUD_DB_NAME} -h ${DB_HOST} < ${NEXTCLOUD_DB_BACKUP};
     check_result $? "Restoring DB"
-    # empty oc_users table
-    mysql -u ${NEXTCLOUD_DB_USER} -p${NEXTCLOUD_DB_PWD} -D ${NEXTCLOUD_DB_NAME} -h ${DB_HOST} -e "TRUNCATE TABLE oc_users;";
-    check_result $? "Truncating Users table"
-    mysql -u ${NEXTCLOUD_DB_USER} -p${NEXTCLOUD_DB_PWD} -D ${NEXTCLOUD_DB_NAME} -h ${DB_HOST} -e "TRUNCATE TABLE oc_ldap_user_mapping;";
-    check_result $? "Truncating LDAP Users mapping table"
 fi
+# empty oc_users table
+mysql -u ${NEXTCLOUD_DB_USER} -p${NEXTCLOUD_DB_PWD} -D ${NEXTCLOUD_DB_NAME} -h ${DB_HOST} -e "TRUNCATE TABLE oc_users;";
+check_result $? "Truncating Users table"
+mysql -u ${NEXTCLOUD_DB_USER} -p${NEXTCLOUD_DB_PWD} -D ${NEXTCLOUD_DB_NAME} -h ${DB_HOST} -e "TRUNCATE TABLE oc_ldap_user_mapping;";
+check_result $? "Truncating LDAP Users mapping table"
 
 # ### Nextcloud config file ###
 

@@ -1,4 +1,4 @@
-FROM bingen/rpi-nginx-php5
+FROM bingen/rpi-nginx-php
 
 ARG NEXTCLOUD_VERSION
 ARG NEXTCLOUD_DATA_PATH
@@ -32,10 +32,6 @@ RUN wget https://download.nextcloud.com/server/releases/${NEXTCLOUD_VERSION}.tar
     tar xvf ${NEXTCLOUD_VERSION}.tar.bz2 && \
     chown -R www-data:www-data nextcloud && \
     rm ${NEXTCLOUD_VERSION}.tar.bz2
-
-# Moved to docker-entrypoint.sh
-# WORKDIR /var/wwwnextcloud
-# sudo -u www-data php occ  maintenance:install --database "mysql" --database-host "${DB_HOST}" --database-name "${NEXTCLOUD_DB_NAME}"  --database-user "{NEXTCLOUD_DB_USER}" --database-pass "{NEXTCLOUD_DB_PWD}" --admin-user "admin" --admin-pass "{NEXTCLOUD_ADMIN_PWD}" --data-dir ${NEXTCLOUD_DATA_PATH}
 
 WORKDIR /
 COPY docker-entrypoint.sh /usr/local/bin/entrypoint.sh
