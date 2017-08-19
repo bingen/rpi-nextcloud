@@ -5,9 +5,8 @@
 #NEXTCLOUD_DB_PWD=`< /dev/urandom tr -dc _A-Z-a-z-0-9 | head -c${1:-32};echo;`
 NEXTCLOUD_DB_PWD=`openssl rand -base64 20`
 
-if [ -z "$NEXTCLOUD_SERVER_NAME" ]; then
-    echo >&2 'error: you have to provide a server-name'
-    echo >&2 '  Did you forget to add -e HOSTNAME=... ?'
+if [ -z "${NEXTCLOUD_SERVER_NAME}" ]; then
+    echo >&2 'error: you have to provide a server-name (NEXTCLOUD_SERVER_NAME)'
     exit 1
 fi
 
@@ -24,6 +23,14 @@ fi
 # set DB root password from secret
 if [ ! -z $MYSQL_ROOT_PWD_FILE -a -f $MYSQL_ROOT_PWD_FILE ]; then
     MYSQL_ROOT_PWD=`cat $MYSQL_ROOT_PWD_FILE`;
+fi
+# set password salt from secret
+if [ ! -z $NEXTCLOUD_SALT_FILE -a -f $NEXTCLOUD_SALT_FILE ]; then
+    NEXTCLOUD_SALT=`cat $NEXTCLOUD_SALT_FILE`;
+fi
+# set NC secret from secret
+if [ ! -z $NEXTCLOUD_SECRET_FILE -a -f $NEXTCLOUD_SECRET_FILE ]; then
+    NEXTCLOUD_SECRET=`cat $NEXTCLOUD_SECRET_FILE`;
 fi
 
 # check needed variables
@@ -107,6 +114,14 @@ check_result $? "Truncating LDAP Users mapping table"
 cd /var/www/nextcloud
 sudo -u www-data php occ maintenance:install --database "mysql" --database-host ${DB_HOST} --database-name ${NEXTCLOUD_DB_NAME}  --database-user ${NEXTCLOUD_DB_USER} --database-pass ${NEXTCLOUD_DB_PWD} --admin-user "admin" --admin-pass ${NEXTCLOUD_ADMIN_PWD} --data-dir ${NEXTCLOUD_DATA_PATH}
 check_result $? "Initializing Config"
+# Password salt and secret are used by Passman and must remain the same after
+# restarting of the instance, otherwise vaults would become inaccessible
+if [ ! -z "${NEXTCLOUD_SALT}" ]; then
+    sudo -u www-data php occ config:system:set passwordsalt --value "${NEXTCLOUD_SALT}"
+fi
+if [ ! -z "${NEXTCLOUD_SECRET}" ]; then
+    sudo -u www-data php occ config:system:set secret --value "${NEXTCLOUD_SECRET}"
+fi
 sudo -u www-data php occ config:system:set trusted_domains 0 --value nextcloud.${NEXTCLOUD_DOMAIN}
 sudo -u www-data php occ config:system:set trusted_domains 1 --value ${NEXTCLOUD_DOMAIN}
 # Already in manitenance:install command:
