@@ -187,4 +187,20 @@ sudo -u www-data php occ config:app:set user_ldap ldap_user_display_name_2 --val
 sudo -u www-data php occ config:app:set user_ldap ldap_userfilter_groups --value ""
 sudo -u www-data php occ config:app:set user_ldap ldap_userfilter_objectclass --value ""
 
+# upgrade apps
+sudo -u www-data php php occ upgrade
+
+# enable apps
+sudo -u www-data php occ app:enable contacts
+sudo -u www-data php occ app:enable calendar
+sudo -u www-data php occ app:enable tasks
+#sudo -u www-data php occ app:enable spreed
+sudo -u www-data php occ app:enable bookmarks
+#sudo -u www-data php occ app:enable direct_menu
+sudo -u www-data php occ app:enable mail
+sudo -u www-data php occ app:enable news
+sudo -u www-data php occ app:enable notes
+sudo -u www-data php occ app:enable passman
+sudo -u www-data php occ app:enable tasks
+
 exec "$@"
