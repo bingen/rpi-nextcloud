@@ -1,5 +1,7 @@
 FROM bingen/rpi-nginx-php
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 ARG NEXTCLOUD_VERSION
 ARG NEXTCLOUD_DATA_PATH
 ARG NEXTCLOUD_BACKUP_PATH
@@ -8,9 +10,9 @@ RUN apt-get update && \
     apt-get install -y wget bzip2 vim rsync mariadb-client php5-ldap cron anacron
 
 # Change upload-limits and -sizes
-RUN sudo sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 2048M/g" /etc/php5/fpm/php.ini && \
-    sudo sed -i "s/post_max_size = 8M/post_max_size =root123  2048M/g" /etc/php5/fpm/php.ini && \
-    sudo echo 'default_charset = "UTF-8"' >> /etc/php5/fpm/php.ini && \
+RUN sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 2048M/g" /etc/php5/fpm/php.ini && \
+    sed -i "s/post_max_size = 8M/post_max_size =root123  2048M/g" /etc/php5/fpm/php.ini && \
+    echo 'default_charset = "UTF-8"' >> /etc/php5/fpm/php.ini && \
     echo "upload_tmp_dir = ${NEXTCLOUD_DATA_PATH}" >> /etc/php5/fpm/php.ini && \
     echo "extension = apc.so" >> /etc/php5/fpm/php.ini && \
     echo "apc.enabled = 1" >> /etc/php5/fpm/php.ini && \
