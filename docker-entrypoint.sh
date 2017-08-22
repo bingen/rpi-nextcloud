@@ -188,7 +188,7 @@ sudo -u www-data php occ config:app:set user_ldap ldap_userfilter_groups --value
 sudo -u www-data php occ config:app:set user_ldap ldap_userfilter_objectclass --value ""
 
 # upgrade apps
-sudo -u www-data php php occ upgrade
+sudo -u www-data php occ upgrade
 
 # enable apps
 sudo -u www-data php occ app:enable contacts
@@ -202,5 +202,11 @@ sudo -u www-data php occ app:enable news
 sudo -u www-data php occ app:enable notes
 sudo -u www-data php occ app:enable passman
 sudo -u www-data php occ app:enable tasks
+sudo -u www-data php occ drawio
+sudo -u www-data php occ gpxedit
+sudo -u www-data php occ gpxmotion
+sudo -u www-data php occ gpxpod
+sudo -u www-data php occ sharebyemail
+sudo -u www-data php occ socialsharing_email
 
 exec "$@"
