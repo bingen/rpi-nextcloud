@@ -1,5 +1,8 @@
 #!/bin/sh
 
+# read environment variables
+. /root/env.sh
+
 # TODO: mail
 #Mail vars
 #MAIL_FROM="postmaster@{DOMAIN}"

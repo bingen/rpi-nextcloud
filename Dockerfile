@@ -7,7 +7,7 @@ ARG NEXTCLOUD_DATA_PATH
 ARG NEXTCLOUD_BACKUP_PATH
 
 RUN apt-get update && \
-    apt-get install -y wget bzip2 vim rsync mariadb-client php5-ldap cron anacron
+    apt-get install -y wget bzip2 vim rsync mariadb-client php5-ldap cron
 
 # Change upload-limits and -sizes
 RUN sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 2048M/g" /etc/php5/fpm/php.ini && \

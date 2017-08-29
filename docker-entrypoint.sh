@@ -209,4 +209,9 @@ sudo -u www-data php occ app:enable gpxpod
 sudo -u www-data php occ app:enable sharebyemail
 sudo -u www-data php occ app:enable socialsharing_email
 
+# copy variables to a file for cron
+printenv | grep "NEXTCLOUD\|DB" | sed 's/^\(.*\)$/export \1/g' > /root/env.sh
+
+service cron start
+
 exec "$@"
