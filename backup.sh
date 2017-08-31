@@ -3,6 +3,10 @@
 # read environment variables
 . /root/env.sh
 
+LOG_PATH=/tmp
+ERROR=""
+TIMESTAMP=`date +"%Y%m%d"`
+
 # TODO: mail
 #Mail vars
 #MAIL_FROM="postmaster@{DOMAIN}"
@@ -13,9 +17,6 @@ mail() {
     #mutt -e "set from=${MAIL_FROM}" -s "${MAIL_SUBJECT}" -- "${MAIL_TO}" <<< $1
     echo $1
 }
-
-ERROR=""
-TIMESTAMP=`date +"%Y%m%d"`
 
 # Backup config file (it's important for salt and secret)
 echo "Copying config file"
@@ -29,7 +30,7 @@ fi
 
 # Backup Nextcloud root folder
 echo "Copying Nextcloud"
-rsync -auv --delete --ignore-errors /var/www/nextcloud/  ${NEXTCLOUD_BACKUP_PATH}/nextcloud > /tmp/backup_nextcloud-${TIMESTAMP}.log 2>&1
+rsync -auv --delete --ignore-errors /var/www/nextcloud/  ${NEXTCLOUD_BACKUP_PATH}/nextcloud > ${LOG_PATH}/backup_nextcloud-${TIMESTAMP}.log 2>&1
 if [ $? != 0 ]
 then
     tmp="Error copying Nextcloud.\n"
@@ -39,7 +40,7 @@ fi
 
 # Backup Nextcloud Data folder
 echo "Copying Data"
-rsync -auv --delete --ignore-errors ${NEXTCLOUD_DATA_PATH}/  ${NEXTCLOUD_BACKUP_PATH}/data > /tmp/backup_nextcloud_data-${TIMESTAMP}.log 2>&1
+rsync -auv --delete --ignore-errors ${NEXTCLOUD_DATA_PATH}/  ${NEXTCLOUD_BACKUP_PATH}/data > ${LOG_PATH}/backup_nextcloud_data-${TIMESTAMP}.log 2>&1
 if [ $? != 0 ]
 then
     tmp="Error copying Data.\n"
@@ -61,6 +62,8 @@ fi
 gzip ${DB_BACKUP_FILE}
 # Remove backups older than 5 days
 find ${NEXTCLOUD_BACKUP_PATH} -mtime +5 -type f -name "nextcloud-sqlbkp*" -delete
+# Remove old logs too
+find ${LOG_PATH} -mtime +5 -type f -name "backup_nextcloud*" -delete
 
 if [ -z "$ERROR" ]
 then
