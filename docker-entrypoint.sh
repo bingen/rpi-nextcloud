@@ -10,7 +10,7 @@ if [ -z "${NEXTCLOUD_SERVER_NAME}" ]; then
     exit 1
 fi
 
-sudo sed -i "s/server_name localhost/server_name $NEXTCLOUD_SERVER_NAME/g" /etc/nginx/sites-available/default
+sudo sed -i "s/server_name localhost/server_name ${NEXTCLOUD_SERVER_NAME}.${NEXTCLOUD_DOMAIN} ${NEXTCLOUD_SERVER_NAME}/g" /etc/nginx/sites-available/default
 
 # set Admin password from secret
 if [ ! -z $NEXTCLOUD_ADMIN_PWD_FILE -a -f $NEXTCLOUD_ADMIN_PWD_FILE ]; then
@@ -122,7 +122,7 @@ fi
 if [ ! -z "${NEXTCLOUD_SECRET}" ]; then
     sudo -u www-data php occ config:system:set secret --value "${NEXTCLOUD_SECRET}"
 fi
-sudo -u www-data php occ config:system:set trusted_domains 0 --value nextcloud.${NEXTCLOUD_DOMAIN}
+sudo -u www-data php occ config:system:set trusted_domains 0 --value ${NEXTCLOUD_SERVER_NAME}.${NEXTCLOUD_DOMAIN}
 sudo -u www-data php occ config:system:set trusted_domains 1 --value ${NEXTCLOUD_DOMAIN}
 # Already in manitenance:install command:
 #sudo -u www-data php occ config:system:set datadirectory ${NEXTCLOUD_DATA_PATH}

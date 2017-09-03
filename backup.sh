@@ -28,26 +28,6 @@ then
     ERROR="$ERROR $tmp"
 fi
 
-# Backup Nextcloud root folder
-echo "Copying Nextcloud"
-rsync -auv --delete --ignore-errors /var/www/nextcloud/  ${NEXTCLOUD_BACKUP_PATH}/nextcloud > ${LOG_PATH}/backup_nextcloud-${TIMESTAMP}.log 2>&1
-if [ $? != 0 ]
-then
-    tmp="Error copying Nextcloud.\n"
-    echo $tmp
-    ERROR="$ERROR $tmp"
-fi
-
-# Backup Nextcloud Data folder
-echo "Copying Data"
-rsync -auv --delete --ignore-errors ${NEXTCLOUD_DATA_PATH}/  ${NEXTCLOUD_BACKUP_PATH}/data > ${LOG_PATH}/backup_nextcloud_data-${TIMESTAMP}.log 2>&1
-if [ $? != 0 ]
-then
-    tmp="Error copying Data.\n"
-    echo $tmp
-    ERROR="$ERROR $tmp"
-fi
-
 # Backup Mysql DB
 DB_PWD=`grep dbpassword /var/www/nextcloud/config/config.php | awk -F "'" '{ print $4 }'`
 DB_BACKUP_FILE=${NEXTCLOUD_BACKUP_PATH}/nextcloud-sqlbkp_${TIMESTAMP}.sql
@@ -64,6 +44,37 @@ gzip ${DB_BACKUP_FILE}
 find ${NEXTCLOUD_BACKUP_PATH} -mtime +5 -type f -name "nextcloud-sqlbkp*" -delete
 # Remove old logs too
 find ${LOG_PATH} -mtime +5 -type f -name "backup_nextcloud*" -delete
+
+# Backup Nextcloud root folder
+echo "Copying Nextcloud"
+rsync -auv --delete --ignore-errors /var/www/nextcloud/  ${NEXTCLOUD_BACKUP_PATH}/nextcloud > ${LOG_PATH}/backup_nextcloud-${TIMESTAMP}.log 2>&1
+if [ $? != 0 ]
+then
+    tmp="Error copying Nextcloud.\n"
+    echo $tmp
+    ERROR="$ERROR $tmp"
+fi
+
+# Backup Let's Encrypt
+echo "Copying Let's Encrypt data"
+rsync -auv --delete --ignore-errors /etc/letsencrypt/  ${NEXTCLOUD_BACKUP_PATH}/letsencrypt > ${LOG_PATH}/backup_nextcloud_letsencrypt-${TIMESTAMP}.log 2>&1
+if [ $? != 0 ]
+then
+    tmp="Error copying Let's Encrypt data.\n"
+    echo $tmp
+    ERROR="$ERROR $tmp"
+fi
+
+# Backup Nextcloud Data folder
+echo "Copying Data"
+rsync -auv --delete --ignore-errors ${NEXTCLOUD_DATA_PATH}/  ${NEXTCLOUD_BACKUP_PATH}/data > ${LOG_PATH}/backup_nextcloud_data-${TIMESTAMP}.log 2>&1
+if [ $? != 0 ]
+then
+    tmp="Error copying Data.\n"
+    echo $tmp
+    ERROR="$ERROR $tmp"
+fi
+
 
 if [ -z "$ERROR" ]
 then

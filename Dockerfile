@@ -6,8 +6,10 @@ ARG NEXTCLOUD_VERSION
 ARG NEXTCLOUD_DATA_PATH
 ARG NEXTCLOUD_BACKUP_PATH
 
+RUN echo deb http://deb.debian.org/debian jessie-backports main  >> /etc/apt/sources.list
 RUN apt-get update && \
-    apt-get install -y wget bzip2 vim rsync mariadb-client php5-ldap cron
+    apt-get install -y wget bzip2 vim rsync mariadb-client php5-ldap cron && \
+    apt-get install certbot -t jessie-backports
 
 # Change upload-limits and -sizes
 RUN sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 2048M/g" /etc/php5/fpm/php.ini && \
@@ -41,6 +43,9 @@ COPY docker-entrypoint.sh /usr/local/bin/entrypoint.sh
 RUN chmod +x /usr/local/bin/entrypoint.sh
 COPY backup.sh /etc/cron.daily/backup
 RUN chmod +x /etc/cron.daily/backup
+
+# Let's Encrypt
+COPY letsencrypt.sh /usr/local/bin/letsencrypt.sh
 
 #VOLUME ${NEXTCLOUD_DATA_PATH}
 #VOLUME ${NEXTCLOUD_BACKUP_PATH}

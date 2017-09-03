@@ -1,7 +1,11 @@
 server { 
     listen 80; 
     server_name localhost;
-    rewrite ^ https://$server_name$request_uri? permanent; # enforce https 
+    root /var/www/html;
+    location ~ ^/.well-known/acme-challenge/(.*)$ {
+        allow all;
+    }
+    #rewrite ^ https://$server_name$request_uri? permanent; # enforce https 
 }
 
 server {
