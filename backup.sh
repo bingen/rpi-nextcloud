@@ -41,7 +41,8 @@ fi
 # Compress Mysql Backup
 gzip ${DB_BACKUP_FILE}
 # Remove backups older than 5 days
-find ${NEXTCLOUD_BACKUP_PATH} -mtime +5 -type f -name "nextcloud-sqlbkp*" -delete
+find ${NEXTCLOUD_BACKUP_PATH} -maxdepth 1 -mtime +5 -type f -name "nextcloud-sqlbkp*" -delete
+find ${NEXTCLOUD_BACKUP_PATH} -maxdepth 1 -mtime +5 -type f -name "config_*\.php" -delete
 # Remove old logs too
 find ${LOG_PATH} -mtime +5 -type f -name "backup_nextcloud*" -delete
 
