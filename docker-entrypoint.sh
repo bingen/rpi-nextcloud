@@ -40,7 +40,7 @@ if [[ -z ${DB_HOST} || -z ${NEXTCLOUD_DB_NAME} || -z ${NEXTCLOUD_DB_USER} \
     echo "Missing variable! You must provide: DB_HOST, NEXTCLOUD_DB_NAME, \
 NEXTCLOUD_DB_USER, NEXTCLOUD_DB_PWD, NEXTCLOUD_ADMIN_PWD, NEXTCLOUD_DATA_PATH, \
 NEXTCLOUD_BACKUP_PATH";
-    env;
+    #env;
     exit 1;
 fi
 
@@ -73,7 +73,7 @@ while [ $R -eq 111 ]; do
     R=$?;
 done
 
-# check if DB exists (not needed actually, but good to log it)
+# check if DB exists
 DB_EXISTS=$(mysql -u root -p${MYSQL_ROOT_PWD} -h ${DB_HOST} -e "SHOW DATABASES" 2> /dev/null | grep ${NEXTCLOUD_DB_NAME})
 echo DB exists: ${DB_EXISTS}
 
@@ -104,6 +104,7 @@ if [ ! -z "${DB_EXISTS}" -a ! -z "${NEXTCLOUD_DB_BACKUP}" -a -f "${NEXTCLOUD_DB_
     check_result $? "Restoring DB"
 fi
 # empty oc_users table
+echo "Removing users"
 mysql -u ${NEXTCLOUD_DB_USER} -p${NEXTCLOUD_DB_PWD} -D ${NEXTCLOUD_DB_NAME} -h ${DB_HOST} -e "TRUNCATE TABLE oc_users;";
 check_result $? "Truncating Users table"
 mysql -u ${NEXTCLOUD_DB_USER} -p${NEXTCLOUD_DB_PWD} -D ${NEXTCLOUD_DB_NAME} -h ${DB_HOST} -e "TRUNCATE TABLE oc_ldap_user_mapping;";
@@ -111,6 +112,7 @@ check_result $? "Truncating LDAP Users mapping table"
 
 # ### Nextcloud config file ###
 
+echo "Configuring Nextcloud"
 cd /var/www/nextcloud
 sudo -u www-data php occ maintenance:install --database "mysql" --database-host ${DB_HOST} --database-name ${NEXTCLOUD_DB_NAME}  --database-user ${NEXTCLOUD_DB_USER} --database-pass ${NEXTCLOUD_DB_PWD} --admin-user "admin" --admin-pass ${NEXTCLOUD_ADMIN_PWD} --data-dir ${NEXTCLOUD_DATA_PATH}
 check_result $? "Initializing Config"
