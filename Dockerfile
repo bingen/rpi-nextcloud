@@ -6,20 +6,19 @@ ARG NEXTCLOUD_VERSION
 ARG NEXTCLOUD_DATA_PATH
 ARG NEXTCLOUD_BACKUP_PATH
 
-RUN echo deb http://deb.debian.org/debian jessie-backports main  >> /etc/apt/sources.list
 RUN apt-get update && \
-    apt-get install -y wget bzip2 vim rsync mariadb-client php5-ldap cron && \
-    apt-get install certbot -t jessie-backports
+    apt-get install -y wget bzip2 vim rsync mariadb-client cron && \
+    apt-get clean
 
 # Change upload-limits and -sizes
-RUN sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 2048M/g" /etc/php5/fpm/php.ini && \
-    sed -i "s/post_max_size = 8M/post_max_size =root123  2048M/g" /etc/php5/fpm/php.ini && \
-    echo 'default_charset = "UTF-8"' >> /etc/php5/fpm/php.ini && \
-    echo "upload_tmp_dir = ${NEXTCLOUD_DATA_PATH}" >> /etc/php5/fpm/php.ini && \
-    echo "extension = apc.so" >> /etc/php5/fpm/php.ini && \
-    echo "apc.enabled = 1" >> /etc/php5/fpm/php.ini && \
-    echo "apc.include_once_override = 0" >> /etc/php5/fpm/php.ini && \
-    echo "apc.shm_size = 256" >> /etc/php5/fpm/php.ini
+RUN sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 2048M/g" /etc/php/7.0/fpm/php.ini && \
+    sed -i "s/post_max_size = 8M/post_max_size =root123  2048M/g" /etc/php/7.0/fpm/php.ini && \
+    echo 'default_charset = "UTF-8"' >> /etc/php/7.0/fpm/php.ini && \
+    echo "upload_tmp_dir = ${NEXTCLOUD_DATA_PATH}" >> /etc/php/7.0/fpm/php.ini && \
+    echo "extension = apc.so" >> /etc/php/7.0/fpm/php.ini && \
+    echo "apc.enabled = 1" >> /etc/php/7.0/fpm/php.ini && \
+    echo "apc.include_once_override = 0" >> /etc/php/7.0/fpm/php.ini && \
+    echo "apc.shm_size = 256" >> /etc/php/7.0/fpm/php.ini
 
 # now add our hand-written nginx-default-configuration which makes use of all the stuff so far prepared
 COPY default /etc/nginx/sites-available/default
@@ -44,12 +43,9 @@ RUN chmod +x /usr/local/bin/entrypoint.sh
 COPY backup.sh /etc/cron.daily/backup
 RUN chmod +x /etc/cron.daily/backup
 
-# Let's Encrypt
-COPY letsencrypt.sh /usr/local/bin/letsencrypt.sh
-
 #VOLUME ${NEXTCLOUD_DATA_PATH}
 #VOLUME ${NEXTCLOUD_BACKUP_PATH}
 
 ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
-CMD service php5-fpm start && nginx
-#CMD ["service", "php5-fpm", "start", "&&", "nginx"]
+CMD service php7.0-fpm start && nginx
+#CMD ["service", "php7.0-fpm", "start", "&&", "nginx"]

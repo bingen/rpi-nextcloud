@@ -56,16 +56,6 @@ then
     ERROR="$ERROR $tmp"
 fi
 
-# Backup Let's Encrypt
-echo "Copying Let's Encrypt data"
-rsync -auv --delete --ignore-errors /etc/letsencrypt/  ${NEXTCLOUD_BACKUP_PATH}/letsencrypt > ${LOG_PATH}/backup_nextcloud_letsencrypt-${TIMESTAMP}.log 2>&1
-if [ $? != 0 ]
-then
-    tmp="Error copying Let's Encrypt data.\n"
-    echo $tmp
-    ERROR="$ERROR $tmp"
-fi
-
 # Backup Nextcloud Data folder
 echo "Copying Data"
 rsync -auv --delete --ignore-errors ${NEXTCLOUD_DATA_PATH}/  ${NEXTCLOUD_BACKUP_PATH}/data > ${LOG_PATH}/backup_nextcloud_data-${TIMESTAMP}.log 2>&1
