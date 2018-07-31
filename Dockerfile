@@ -23,6 +23,13 @@ RUN sed -i "s/upload_max_filesize = 2M/upload_max_filesize = 2048M/g" /etc/php/7
 # now add our hand-written nginx-default-configuration which makes use of all the stuff so far prepared
 COPY default /etc/nginx/sites-available/default
 
+# PHP config
+COPY php_nc.ini /tmp/php_nc.ini
+RUN cat /tmp/php_nc.ini >> /etc/php/7.0/fpm/php.ini && \
+    cat /tmp/php_nc.ini >> /etc/php/7.0/cli/php.ini
+# https://docs.nextcloud.com/server/13/admin_manual/installation/source_installation.html#php-fpm-tips-label
+RUN sed -i 's/^;env/env/g' /etc/php/7.0/fpm/pool.d/www.conf
+
 # Create the data-directory where NEXTCLOUD can store its stuff
 RUN mkdir -p "${NEXTCLOUD_DATA_PATH}" && \
     chown -R www-data:www-data "${NEXTCLOUD_DATA_PATH}" && \

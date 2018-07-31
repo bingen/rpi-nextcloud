@@ -137,6 +137,8 @@ sudo -u www-data php occ config:system:set mail_from_address --value postmaster
 sudo -u www-data php occ config:system:set mail_domain --value ${NEXTCLOUD_DOMAIN}
 sudo -u www-data php occ config:system:set ldapIgnoreNamingRules --value false
 sudo -u www-data php occ config:system:set ldapProviderFactory --value "\\OCA\\User_LDAP\\LDAPProviderFactory"
+# https://docs.nextcloud.com/server/13/admin_manual/configuration_server/caching_configuration.html
+sudo -u www-data php occ config:system:set memcache.local --value '\OC\Memcache\APCu'
 sudo -u www-data php occ config:app:set user_ldap enabled --value yes
 sudo -u www-data php occ config:app:set user_ldap types --value authentication
 sudo -u www-data php occ config:app:set user_ldap ldap_host --value ${LDAP_SERVER_HOST}
